@@ -1,0 +1,5 @@
+*.hi
+*.o
+chip8
+dist-newstyle
+Haskell-SFMl
