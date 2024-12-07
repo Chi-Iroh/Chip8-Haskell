@@ -1,9 +1,9 @@
+{-# LANGUAGE ExistentialQuantification #-}
 module Main where
 
 import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Control.Monad.IO.Class (liftIO)
-import Data.Either (isLeft)
 import System.Exit (die, exitSuccess)
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -36,36 +36,31 @@ import SFML.SFResource (SFResource)
 import Debug (debug2)
 import Either (fromLeft', fromRight')
 import Expected (Expected(..))
-
-window :: Expected RenderWindow
-window = liftIO $ createRenderWindow (VideoMode 640 480 32) "SFML Haskell Demo" [SFDefaultStyle] Nothing
-
-fromSFException :: SFException -> String
-fromSFException (SFException err) = err
-
-setupRect :: RectangleShape -> Expected RectangleShape
-setupRect rect = liftIO (setFillColor rect white >> setPosition rect (Vec2f 100 50) >> setSize rect (Vec2f 50 50)) >> Expected rect
-
-rect :: Expected RectangleShape
-rect = liftIO createRectangleShape >>= (\rect' -> if isLeft rect' then Unexpected (fromSFException $ fromLeft' rect') else setupRect (fromRight' rect'))
+import MapUtils (mapM2)
+import Screen (Screen, Size, makeScreen, makeWindow, draw)
 
 liftJoin2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 liftJoin2 f a b = join $ liftA2 f a b
 
-destroy' :: SFML.SFResource.SFResource a => a -> Expected ()
-destroy' a = liftIO (destroy a)
+data SFMLResource = forall a. SFML.SFResource.SFResource a => SFMLResource a
+
+destroy' :: SFMLResource -> Expected ()
+destroy' (SFMLResource a) = liftIO (destroy a)
+
+destroyAll :: [SFMLResource] -> Expected ()
+destroyAll = mapM_ destroy'
 
 exit :: Expected a -> IO ()
 exit (Unexpected err) = die err
 exit _ = exitSuccess
 
 main :: IO ()
-main = exit $ liftJoin2 (\window' rect' -> loop window' rect' >> destroy' window' >> destroy' rect') window rect
+main = exit $ liftJoin2 (\window screen -> loop window screen >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
 
-handleEvent :: RenderWindow -> RectangleShape -> Maybe SFEvent -> Expected ()
+handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected ()
 handleEvent _ _ (Just SFEvtClosed) = return ()
 handleEvent _ _ Nothing = return ()
-handleEvent window' rect' _ = loop window' rect'
+handleEvent window screen _ = loop window screen
 
-loop :: RenderWindow -> RectangleShape -> Expected ()
-loop window' rect' = liftIO (clearRenderWindow window' blue >> drawRectangle window' rect' Nothing >> display window' >> waitEvent window') >>= handleEvent window' rect'
+loop :: RenderWindow -> Screen -> Expected ()
+loop window screen = liftIO (clearRenderWindow window blue >> draw window screen Nothing >> display window >> waitEvent window) >>= handleEvent window screen
