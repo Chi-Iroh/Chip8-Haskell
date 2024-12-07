@@ -1,4 +1,5 @@
-module Screen (Size, Screen, pixelSide, pixelSize, screenSize, height, width, makeWindow, makeScreen, draw) where
+{-# LANGUAGE InstanceSigs #-}
+module Screen (Size, Screen, pixelSide, pixelSize, screenSize, makeWindow, makeScreen, draw, destroy) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (isLeft)
@@ -19,9 +20,11 @@ data Screen = Screen {
 }
 
 instance SFResource Screen where
+    destroy :: Screen -> IO ()
     destroy = mapM2_ destroy . rects
 
 instance SFDrawable Screen where
+    draw :: SFRenderTarget t => t -> Screen -> Maybe RenderStates -> IO ()
     draw target screen renderStates = mapM2_ (\rect -> drawRectangle target rect renderStates) (rects screen)
 
 pixelSide :: Int
