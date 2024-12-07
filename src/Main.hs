@@ -6,7 +6,7 @@ import Control.Monad.IO.Class (liftIO)
 import System.Exit (die, exitSuccess)
 import System.IO.Unsafe (unsafePerformIO)
 
-import SFML.Window (display, SFWindow(waitEvent), SFEvent(SFEvtClosed))
+import SFML.Window (display, SFWindow(waitEvent), SFEvent(SFEvtClosed, SFEvtKeyPressed), KeyCode(..))
 import SFML.Graphics
     ( black,
       clearRenderWindow,
@@ -33,6 +33,7 @@ main = exit $ liftJoin2 (\window screen -> loop window screen >> destroyAll [SFM
 
 handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected ()
 handleEvent _ _ (Just SFEvtClosed) = return ()
+handleEvent _ _ (Just (SFEvtKeyPressed KeyEscape _ _ _ _)) = return ()
 handleEvent _ _ Nothing = return ()
 handleEvent window screen _ = loop window screen
 
