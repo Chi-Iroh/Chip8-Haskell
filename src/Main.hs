@@ -15,7 +15,6 @@ import SFML.Graphics
       display,
       waitEvent )
 
-import Debug (debug2)
 import Destroy (SFMLResource(..), destroyAll)
 import Either (fromLeft', fromRight')
 import Expected (Expected(..))
