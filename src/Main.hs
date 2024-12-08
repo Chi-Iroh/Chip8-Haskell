@@ -19,7 +19,7 @@ import Destroy (SFMLResource(..), destroyAll)
 import Either (fromLeft', fromRight')
 import Expected (Expected(..))
 import MapUtils (mapM2)
-import Screen (Screen, Size, makeScreen, makeWindow, draw)
+import Screen (Screen, Size, makeScreen, makeWindow, draw, swapAllPixels)
 
 liftJoin2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 liftJoin2 f a b = join $ liftA2 f a b
@@ -31,11 +31,12 @@ exit _ = exitSuccess
 main :: IO ()
 main = exit $ liftJoin2 (\window screen -> loop window screen >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
 
-handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected ()
-handleEvent _ _ (Just SFEvtClosed) = return ()
-handleEvent _ _ (Just (SFEvtKeyPressed KeyEscape _ _ _ _)) = return ()
-handleEvent _ _ Nothing = return ()
+handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected Screen
+handleEvent _ screen Nothing = return screen
+handleEvent _ screen (Just SFEvtClosed) = return screen
+handleEvent _ screen (Just (SFEvtKeyPressed KeyEscape _ _ _ _)) = return screen
+handleEvent window screen (Just (SFEvtKeyPressed KeySpace _ _ _ _)) = loop window (swapAllPixels screen)
 handleEvent window screen _ = loop window screen
 
-loop :: RenderWindow -> Screen -> Expected ()
+loop :: RenderWindow -> Screen -> Expected Screen
 loop window screen = liftIO (clearRenderWindow window black >> draw window screen Nothing >> display window >> waitEvent window) >>= handleEvent window screen

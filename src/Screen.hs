@@ -1,8 +1,11 @@
 {-# LANGUAGE InstanceSigs #-}
-module Screen (Size, Screen, pixelSide, pixelSize, screenSize, makeWindow, makeScreen, draw, destroy) where
+module Screen (Size, Screen, pixelSide, pixelSize, screenSize, makeWindow, makeScreen, draw, destroy, putPixel, putPixels, swapPixel, swapPixels, swapAllPixels) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (isLeft)
+import Data.List (find)
+import Data.Maybe (maybe)
+import Debug.Trace
 
 import SFML.Graphics
 import SFML.Window
@@ -11,7 +14,7 @@ import SFML.SFException
 
 import Either
 import Expected
-import MapUtils (imapM2, mapM2_)
+import MapUtils (map2, imapM2, mapM2_, imap, imap2)
 import SFVector (itoVec2f)
 
 data Screen = Screen {
@@ -23,9 +26,18 @@ instance SFResource Screen where
     destroy :: Screen -> IO ()
     destroy = mapM2_ destroy . rects
 
+zip2 :: [[a]] -> [[b]] -> [[(a, b)]]
+zip2 = zipWith zip
+
+boolColor :: Bool -> Color
+boolColor True = white
+boolColor False = black
+
 instance SFDrawable Screen where
     draw :: SFRenderTarget t => t -> Screen -> Maybe RenderStates -> IO ()
-    draw target screen renderStates = mapM2_ (\rect -> drawRectangle target rect renderStates) (rects screen)
+    draw target screen renderStates = mapM2_ (\(isWhite, rect) -> setFillColor rect (boolColor isWhite) >> drawRectangle target rect renderStates) (zip2 px' rects')
+        where rects' = rects screen
+              px' = px screen
 
 pixelSide :: Int
 pixelSide = 8
@@ -70,8 +82,44 @@ makeScreen' px rects = Screen {
     rects = rects
 }
 
+generatePixels :: [[Bool]]
+generatePixels = replicate (height_ screenSize) (replicate (width_ screenSize) False)
+
 makeScreen :: Expected Screen
 makeScreen = fmap (makeScreen' pixels) rects
     where
-        pixels = replicate (height_ screenSize) (replicate (width_ screenSize) False)
-        rects = imapM2 (\y x color -> makePixel (pixelPos (x, y)) (if mod x 2 == mod y 2 then red else green)) pixels
+        pixels = generatePixels
+        rects = imapM2 (\x y color -> makePixel (pixelPos (x, y)) black) pixels
+
+findWithDefault :: (a -> Bool) -> b -> (a -> b) -> [a] -> b
+findWithDefault f default' convert arr = maybe default' convert (find f arr)
+
+putPixels :: [(Position, Bool)] -> Screen -> Screen
+putPixels changed screen = Screen {
+    px = imap2 (\x y color' -> findWithDefault ((== (x, y)) . fst) color' snd changed) (px screen),
+    rects = rects screen
+}
+
+putPixel :: Position -> Bool -> Screen -> Screen
+putPixel pos color = putPixels [(pos, color)]
+
+swapPixels :: [Position] -> Screen -> Screen
+swapPixels swapped screen = Screen {
+    px = imap2 (\x y color -> if elem (x, y) swapped then not color else color) (px screen),
+    rects = rects screen
+}
+
+swapPixel :: Position -> Screen -> Screen
+swapPixel pos = swapPixels [pos]
+
+swapAllPixels :: Screen -> Screen
+swapAllPixels screen = Screen {
+    px = map2 not (px screen),
+    rects = rects screen
+}
+
+clearScreen :: Screen -> Screen
+clearScreen screen = Screen {
+    px = generatePixels,
+    rects = rects screen
+}
