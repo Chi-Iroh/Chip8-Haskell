@@ -15,6 +15,8 @@ import SFML.Graphics
       display,
       waitEvent )
 
+import Args (readROM)
+import CPU (CPU(..), Word8)
 import Destroy (SFMLResource(..), destroyAll)
 import Either (fromLeft', fromRight')
 import Expected (Expected(..))
@@ -24,12 +26,13 @@ import Screen (Screen, Size, makeScreen, makeWindow, draw, swapAllPixels, genera
 liftJoin2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 liftJoin2 f a b = join $ liftA2 f a b
 
-exit :: Expected a -> IO ()
+exit :: Show a => Expected a -> IO ()
 exit (Unexpected err) = die err
-exit _ = exitSuccess
+exit (Expected a) = print a >> exitSuccess
 
 main :: IO ()
-main = exit $ liftJoin2 (\window screen -> loop window (generatePixels (\x y _ -> (rem x (y + 1)) == 0) screen) >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
+main = readROM >>= exit
+-- main = exit $ liftJoin2 (\window screen -> loop window (generatePixels (\x y _ -> (rem x (y + 1)) == 0) screen) >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
 
 handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected Screen
 handleEvent _ screen Nothing = return screen

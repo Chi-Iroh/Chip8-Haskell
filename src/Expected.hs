@@ -1,5 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 module Expected (Expected(..), liftIO) where
+
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import System.IO.Unsafe (unsafePerformIO)
 

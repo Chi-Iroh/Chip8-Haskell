@@ -53,13 +53,13 @@ executable Chip8
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules: Debug, Destroy, Either, Expected, MapUtils, Screen, SFVector
+    other-modules: Args, CPU, Debug, Destroy, Either, Expected, MapUtils, Screen, SFVector
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends: base, SFML
+    build-depends: base, bytestring, SFML
 
     -- Directories containing source files.
     hs-source-dirs:   src
