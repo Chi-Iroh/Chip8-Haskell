@@ -1,3 +1,6 @@
 [submodule "Haskell-SFML"]
 	path = Haskell-SFML
 	url = https://github.com/SFML-haskell/SFML.git
+[submodule "roms"]
+	path = roms
+	url = https://github.com/kripod/chip8-roms.git
