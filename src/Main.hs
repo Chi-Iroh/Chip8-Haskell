@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Data.Bits ((.&.))
 import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Control.Monad.IO.Class (liftIO)
@@ -17,10 +18,13 @@ import SFML.Graphics
 
 import Args (readROM)
 import CPU (CPU(..), Word8)
+import Debug (debugMap)
 import Destroy (SFMLResource(..), destroyAll)
 import Either (fromLeft', fromRight')
 import Expected (Expected(..))
+import Hex (showHex16)
 import MapUtils (mapM2)
+import Opcode (identifyOpcode)
 import Screen (Screen, Size, makeScreen, makeWindow, draw, swapAllPixels, generatePixels, sleep)
 
 liftJoin2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
@@ -31,8 +35,9 @@ exit (Unexpected err) = die err
 exit (Expected a) = print a >> exitSuccess
 
 main :: IO ()
+main = print $ identifyOpcode (debugMap "Opcode: " showHex16 0xD125)
 -- main = readROM >>= exit
-main = exit $ liftJoin2 (\window screen -> loop window (generatePixels (\x y _ -> (rem x (y + 1)) == 0) screen) >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
+-- main = exit $ liftJoin2 (\window screen -> loop window (generatePixels (\x y _ -> (rem x (y + 1)) == 0) screen) >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
 
 handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected Screen
 handleEvent _ screen Nothing = return screen
