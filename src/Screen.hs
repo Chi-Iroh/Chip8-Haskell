@@ -1,8 +1,26 @@
 {-# LANGUAGE InstanceSigs #-}
-module Screen (Size, Screen, pixelSide, pixelSize, screenSize, makeWindow, makeScreen, draw, destroy, putPixel, putPixels, swapPixel, swapPixels, swapAllPixels, generatePixels) where
+module Screen (
+    Size,
+    Screen,
+    pixelSide,
+    pixelSize,
+    screenSize,
+    makeWindow,
+    makeScreen,
+    draw,
+    destroy,
+    putPixel,
+    putPixels,
+    swapPixel,
+    swapPixels,
+    swapAllPixels,
+    generatePixels,
+    sleep
+    ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (isLeft)
+import Data.Int (Int64)
 import Data.List (find)
 import Data.Maybe (maybe)
 import Debug.Trace
@@ -11,6 +29,8 @@ import SFML.Graphics
 import SFML.Window
 import SFML.SFResource
 import SFML.SFException
+import SFML.System.Sleep (sfSleep)
+import SFML.System.Time (Time(..), microseconds)
 
 import Either
 import Expected
@@ -61,9 +81,22 @@ width_ = fst
 height_ :: Size -> Int
 height_ = snd
 
+int64 :: Int -> Int64
+int64 = toEnum
+
+fps :: Int
+fps = 60
+
+sleepTime :: Time
+sleepTime = microseconds (div 1000000 (int64 fps))
+
+sleep :: IO ()
+sleep = sfSleep sleepTime
+
 makeWindow :: Expected RenderWindow
-makeWindow = liftIO $ createRenderWindow (VideoMode (width * pixelSide) (height * pixelSide) 32) "Chip8" [SFDefaultStyle] Nothing
+makeWindow = liftIO $ (window >>= (\window' -> setFramerateLimit window' fps >> return window'))
     where (width, height) = screenSize
+          window = createRenderWindow (VideoMode (width * pixelSide) (height * pixelSide) 32) "Chip8" [SFDefaultStyle] Nothing
 
 fromSFException :: SFException -> String
 fromSFException (SFException err) = err
