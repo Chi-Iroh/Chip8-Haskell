@@ -19,7 +19,7 @@ import Destroy (SFMLResource(..), destroyAll)
 import Either (fromLeft', fromRight')
 import Expected (Expected(..))
 import MapUtils (mapM2)
-import Screen (Screen, Size, makeScreen, makeWindow, draw, swapAllPixels)
+import Screen (Screen, Size, makeScreen, makeWindow, draw, swapAllPixels, generatePixels)
 
 liftJoin2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 liftJoin2 f a b = join $ liftA2 f a b
@@ -29,7 +29,7 @@ exit (Unexpected err) = die err
 exit _ = exitSuccess
 
 main :: IO ()
-main = exit $ liftJoin2 (\window screen -> loop window screen >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
+main = exit $ liftJoin2 (\window screen -> loop window (generatePixels (\x y _ -> (rem x (y + 1)) == 0) screen) >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
 
 handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected Screen
 handleEvent _ screen Nothing = return screen

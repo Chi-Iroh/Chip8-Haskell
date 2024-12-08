@@ -1,5 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
-module Screen (Size, Screen, pixelSide, pixelSize, screenSize, makeWindow, makeScreen, draw, destroy, putPixel, putPixels, swapPixel, swapPixels, swapAllPixels) where
+module Screen (Size, Screen, pixelSide, pixelSize, screenSize, makeWindow, makeScreen, draw, destroy, putPixel, putPixels, swapPixel, swapPixels, swapAllPixels, generatePixels) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (isLeft)
@@ -82,13 +82,13 @@ makeScreen' px rects = Screen {
     rects = rects
 }
 
-generatePixels :: [[Bool]]
-generatePixels = replicate (height_ screenSize) (replicate (width_ screenSize) False)
+emptyPixels :: [[Bool]]
+emptyPixels = replicate (height_ screenSize) (replicate (width_ screenSize) False)
 
 makeScreen :: Expected Screen
 makeScreen = fmap (makeScreen' pixels) rects
     where
-        pixels = generatePixels
+        pixels = emptyPixels
         rects = imapM2 (\x y color -> makePixel (pixelPos (x, y)) black) pixels
 
 findWithDefault :: (a -> Bool) -> b -> (a -> b) -> [a] -> b
@@ -102,6 +102,12 @@ putPixels changed screen = Screen {
 
 putPixel :: Position -> Bool -> Screen -> Screen
 putPixel pos color = putPixels [(pos, color)]
+
+generatePixels :: (Int -> Int -> Bool -> Bool) -> Screen -> Screen
+generatePixels f screen = Screen {
+    px = imap2 f (px screen),
+    rects = rects screen
+}
 
 swapPixels :: [Position] -> Screen -> Screen
 swapPixels swapped screen = Screen {
@@ -120,6 +126,6 @@ swapAllPixels screen = Screen {
 
 clearScreen :: Screen -> Screen
 clearScreen screen = Screen {
-    px = generatePixels,
+    px = emptyPixels,
     rects = rects screen
 }
