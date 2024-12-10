@@ -1,50 +1,31 @@
 module Main (main) where
 
-import Data.Bits ((.&.))
-import Control.Applicative (liftA2)
-import Control.Monad (join)
-import Control.Monad.IO.Class (liftIO)
+import Debug.Trace (traceShowId)
 import System.Exit (die, exitSuccess)
-import System.IO.Unsafe (unsafePerformIO)
 
-import SFML.Window (display, SFWindow(waitEvent), SFEvent(SFEvtClosed, SFEvtKeyPressed), KeyCode(..))
-import SFML.Graphics
-    ( black,
-      clearRenderWindow,
-      SFDrawable(draw),
-      RenderWindow,
-      display,
-      waitEvent )
+import SFML.Window (SFEvent(SFEvtClosed, SFEvtKeyPressed), KeyCode(..))
+import SFML.Graphics(RenderWindow)
 
-import Args (readROM)
-import CPU (CPU(..), Word8)
-import Debug (debugMap)
-import Destroy (SFMLResource(..), destroyAll)
-import Either (fromLeft', fromRight')
-import Expected (Expected(..))
-import Hex (showHex16)
-import MapUtils (mapM2)
-import Opcode (identifyOpcode)
-import Screen (Screen, Size, makeScreen, makeWindow, draw, swapAllPixels, generatePixels, sleep)
-
-liftJoin2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
-liftJoin2 f a b = join $ liftA2 f a b
+import Expected (Expected(..), liftIO)
+import Interpreter
+import OpcodeExec (execFrameOpcodes)
+import Screen (Screen, Size, updateScreen)
 
 exit :: Show a => Expected a -> IO ()
-exit (Unexpected err) = die err
+exit (Unexpected err) = die ("Error: " ++ err)
 exit (Expected a) = print a >> exitSuccess
 
+main' :: Expected Interpreter -> Expected ()
+main' interpreter = interpreter >>= loop >>= destroyInterpreter
+
 main :: IO ()
-main = print $ identifyOpcode (debugMap "Opcode: " showHex16 0xD125)
--- main = readROM >>= exit
--- main = exit $ liftJoin2 (\window screen -> loop window (generatePixels (\x y _ -> (rem x (y + 1)) == 0) screen) >> destroyAll [SFMLResource window, SFMLResource screen]) makeWindow makeScreen
+main = exit (main' (traceShowId makeInterpreter))
 
-handleEvent :: RenderWindow -> Screen -> Maybe SFEvent -> Expected Screen
-handleEvent _ screen Nothing = return screen
-handleEvent _ screen (Just SFEvtClosed) = return screen
-handleEvent _ screen (Just (SFEvtKeyPressed KeyEscape _ _ _ _)) = return screen
-handleEvent window screen (Just (SFEvtKeyPressed KeySpace _ _ _ _)) = loop window (swapAllPixels screen)
-handleEvent window screen _ = loop window screen
+handleEvent :: Interpreter -> Maybe SFEvent -> Expected Interpreter
+handleEvent interpreter Nothing = loop interpreter
+handleEvent interpreter (Just SFEvtClosed) = Expected interpreter
+handleEvent interpreter (Just (SFEvtKeyPressed KeyEscape _ _ _ _)) = Expected interpreter
+handleEvent interpreter _ = loop interpreter
 
-loop :: RenderWindow -> Screen -> Expected Screen
-loop window screen = liftIO (sleep >> clearRenderWindow window black >> draw window screen Nothing >> display window >> waitEvent window) >>= handleEvent window screen
+loop :: Interpreter -> Expected Interpreter
+loop interpreter = execFrameOpcodes interpreter >>= (\interpreter' -> updateScreen (window interpreter') (screen interpreter') >>= handleEvent interpreter')

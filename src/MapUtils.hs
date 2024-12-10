@@ -1,6 +1,7 @@
-module MapUtils (map2, imap, imap2, imapM, imapM2, mapM2, mapM2_) where
+module MapUtils where
 
 import Control.Monad (void)
+import Data.List ((!?))
 
 map2 :: (a -> b) -> [[a]] -> [[b]]
 map2 f = map (map f)
@@ -22,3 +23,6 @@ mapM2 f = mapM (mapM f)
 
 mapM2_ :: Monad m => (a -> m b) -> [[a]] -> m ()
 mapM2_ f arr = void $ mapM2 f arr
+
+mapAt :: (a -> a) -> Int -> [a] -> [a]
+mapAt f i = imap (\i' a -> if i == i' then f a else a)

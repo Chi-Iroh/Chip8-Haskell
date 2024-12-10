@@ -1,6 +1,8 @@
-module CPU (Word8, CPU(..), loadROM, memorySize, memoryStart) where
+module CPU (Word8, CPU(..), loadROM, memorySize, memoryStart, isValidPc, checkPc, incrementPc) where
 
 import Expected (Expected(..))
+import Font (initFont)
+import Hex (showHex16)
 import Word (u8, u16, int, Word8, Word16)
 
 memorySize :: Word16
@@ -34,8 +36,12 @@ decrementCounters cpu = cpu {
     sysCounter = decrementCounter (sysCounter cpu)
 }
 
+initInterpreterData :: [Word8]
+initInterpreterData = font ++ replicate (int memoryStart - length font) 0
+    where font = initFont
+
 loadROM' :: [Word8] -> [Word8]
-loadROM' rom = replicate (int memoryStart) 0 ++ rom ++ replicate (int romSize - romSize') 0
+loadROM' rom = initInterpreterData ++ rom ++ replicate (int romSize - romSize') 0
     where romSize' = length rom
 
 loadROM :: [Word8] -> Expected CPU
@@ -51,3 +57,17 @@ loadROM rom
         sysCounter = 0
     }
     where romSize' = length rom
+
+inRange :: Ord a => a -> a -> a -> Bool
+inRange start end a = start <= a && a <= end
+
+isValidPc :: Word16 -> Bool
+isValidPc = inRange (memoryStart - 2) (memorySize - 2)
+
+checkPc :: Word16 -> Expected Word16
+checkPc pc'
+    | isValidPc pc' = Expected pc'
+    | otherwise = Unexpected ("PC out of range ! Must be between " ++ showHex16 memoryStart ++ " and " ++ showHex16 (memorySize - 2) ++ " but is " ++ showHex16 pc' ++ " !")
+
+incrementPc :: CPU -> Expected CPU
+incrementPc cpu = checkPc (pc cpu) >> checkPc (pc cpu + 2) >>= (\pc' -> Expected cpu { pc = pc' })

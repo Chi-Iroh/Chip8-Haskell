@@ -1,5 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 module Screen (
+    Position,
     Size,
     Screen,
     pixelSide,
@@ -15,7 +16,9 @@ module Screen (
     swapPixels,
     swapAllPixels,
     generatePixels,
-    sleep
+    clearScreen,
+    sleep,
+    updateScreen
     ) where
 
 import Control.Monad.IO.Class (liftIO)
@@ -33,7 +36,7 @@ import SFML.System.Sleep (sfSleep)
 import SFML.System.Time (Time(..), microseconds)
 
 import Either
-import Expected
+import Expected (Expected(..))
 import MapUtils (map2, imapM2, mapM2_, imap, imap2)
 import SFVector (itoVec2f)
 
@@ -41,6 +44,13 @@ data Screen = Screen {
   px :: [[Bool]],
   rects :: [[RectangleShape]]
 }
+
+instance Eq Screen where
+    (==) :: Screen -> Screen -> Bool
+    (==) a b = (px a) == (px b)
+
+    (/=) :: Screen -> Screen -> Bool
+    (/=) a b = (px a) /= (px b)
 
 instance SFResource Screen where
     destroy :: Screen -> IO ()
@@ -94,7 +104,7 @@ sleep :: IO ()
 sleep = sfSleep sleepTime
 
 makeWindow :: Expected RenderWindow
-makeWindow = liftIO $ (window >>= (\window' -> setFramerateLimit window' fps >> return window'))
+makeWindow = liftIO (window >>= (\window' -> setFramerateLimit window' fps >> return window'))
     where (width, height) = screenSize
           window = createRenderWindow (VideoMode (width * pixelSide) (height * pixelSide) 32) "Chip8" [SFDefaultStyle] Nothing
 
@@ -127,12 +137,14 @@ makeScreen = fmap (makeScreen' pixels) rects
 findWithDefault :: (a -> Bool) -> b -> (a -> b) -> [a] -> b
 findWithDefault f default' convert arr = maybe default' convert (find f arr)
 
+-- simply ignores out of range positions
 putPixels :: [(Position, Bool)] -> Screen -> Screen
 putPixels changed screen = Screen {
     px = imap2 (\x y color' -> findWithDefault ((== (x, y)) . fst) color' snd changed) (px screen),
     rects = rects screen
 }
 
+-- simply ignores out of range position
 putPixel :: Position -> Bool -> Screen -> Screen
 putPixel pos color = putPixels [(pos, color)]
 
@@ -142,12 +154,14 @@ generatePixels f screen = Screen {
     rects = rects screen
 }
 
+-- simply ignores out of range positions
 swapPixels :: [Position] -> Screen -> Screen
 swapPixels swapped screen = Screen {
     px = imap2 (\x y color -> if elem (x, y) swapped then not color else color) (px screen),
     rects = rects screen
 }
 
+-- simply ignores out of range position
 swapPixel :: Position -> Screen -> Screen
 swapPixel pos = swapPixels [pos]
 
@@ -162,3 +176,6 @@ clearScreen screen = Screen {
     px = emptyPixels,
     rects = rects screen
 }
+
+updateScreen :: RenderWindow -> Screen -> Expected (Maybe SFEvent)
+updateScreen window screen = liftIO (sleep >> clearRenderWindow window black >> draw window screen Nothing >> display window >> waitEvent window)

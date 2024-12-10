@@ -1,7 +1,10 @@
 {-# LANGUAGE BinaryLiterals #-}
-module Font (initFont) where
+module Font (initFont, digitSize) where
 
 import Data.Word (Word8(..))
+
+digitSize :: Int
+digitSize = 5
 
 -- font is all hex digits drawn in binary
 -- see http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#font

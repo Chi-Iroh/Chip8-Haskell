@@ -1,33 +1,27 @@
-module Opcode (identifyOpcode) where
+module Opcode (readOpcode) where
 
-import Data.Bits
+import Data.Bits ((.>>.), (.<<.), (.|.), (.&.), shiftL)
 import Data.List (find)
 import Data.Maybe (fromJust, isJust)
 
-import Bits
-import CPU (CPU(..), memorySize, memoryStart)
+import CPU (CPU(..), isValidPc, checkPc)
+import Debug (debug2)
 import Expected (Expected(..))
+import Hex (showHex16)
 import OpcodeTypes
 import Word
-
-inRange :: Ord a => a -> a -> a -> Bool
-inRange start end a = start <= a && a <= end
 
 read8 :: [Word8] -> Word16 -> Word8
 read8 mem = (mem !!) . int
 
 rawOpcode' :: [Word8] -> Word16 -> Word16
-rawOpcode' memory' pc' = shiftL b1 8 .&. b2
+rawOpcode' memory' pc' = b1 .<<. 8 .|. b2
     where [b1, b2] = map u8to16 [read8 memory' pc', read8 memory' (pc' + 1)]
 
 rawOpcode :: CPU -> Expected Word16
-rawOpcode cpu
-    | not (inRange memoryStart (memorySize - 2) pc') = Unexpected ("Out of range PC ! Got " ++ show pc' ++ " but needs to be in (" ++ show memoryStart ++ ", " ++ show (memorySize - 2) ++ ") !")
-    | otherwise = Expected (rawOpcode' memory' pc')
-        where memory' = memory cpu
-              pc' = pc cpu
-
-
+rawOpcode cpu = fmap (rawOpcode' memory') (checkPc pc')
+    where memory' = memory cpu
+          pc' = pc cpu
 
 exactOpcodes :: [(Word16, Opcode)]
 exactOpcodes = [(0x00E0, Op00E0), (0x00EE, Op00EE)]
@@ -74,8 +68,8 @@ thd (_, _, c) = c
 
 makeOpcodeArgs :: Word16 -> OpcodeArgs
 makeOpcodeArgs op = OpcodeArgs {
-    x = u16to8 (op .&. 0x0F00 .>> 8),
-    y = u16to8 (op .&. 0x00F0 .>> 4),
+    x = u16to8 ((op .&. 0x0F00) .>>. 8),
+    y = u16to8 ((op .&. 0x00F0) .>>. 4),
     n = u16to8 (op .&. 0x000F),
     nn = u16to8 (op .&. 0x00FF),
     nnn = op .&. 0x0FFF
@@ -90,5 +84,4 @@ identifyOpcode op
           maskedOp = find (\(mask, res, _) -> mask .&. op == res) maskedOpcodes
 
 readOpcode :: CPU -> Expected Opcode
-readOpcode cpu = Unexpected "d"
-    where raw = rawOpcode cpu
+readOpcode cpu = rawOpcode cpu >>= (\op -> identifyOpcode (debug2 "raw opcode: " (showHex16 op) op))

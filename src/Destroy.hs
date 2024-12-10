@@ -1,5 +1,5 @@
 {-# LANGUAGE ExistentialQuantification #-}
-module Destroy (SFMLResource(..), destroyAll) where
+module Destroy (SFMLResource(..), SFResource(..), destroyAll) where
 
 import SFML.SFResource (SFResource(..), destroy)
 import Expected (Expected(..), liftIO)

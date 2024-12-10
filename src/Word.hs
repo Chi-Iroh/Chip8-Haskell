@@ -4,6 +4,8 @@ module Word (
     u8to16,
     u16to8,
     int,
+    addOverflow8,
+    subUnderflow8,
     Word8(..),
     Word16(..)
     ) where
@@ -24,3 +26,9 @@ u8to16 = u16 . int
 
 u16to8 :: Word16 -> Word8
 u16to8 = u8 . int
+
+addOverflow8 :: Word8 -> Word8 -> (Word8, Bool)
+addOverflow8 a b = (a + b, b <= (0xFF - a))
+
+subUnderflow8 :: Word8 -> Word8 -> (Word8, Bool)
+subUnderflow8 a b = (a - b, a < b)

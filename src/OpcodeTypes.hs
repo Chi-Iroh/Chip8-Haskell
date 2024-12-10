@@ -1,7 +1,9 @@
 {-# LANGUAGE InstanceSigs #-}
 module OpcodeTypes where
 
+import Expected (Expected(..))
 import Hex
+import Interpreter (Interpreter(..))
 import Word
 
 type X = Word8
@@ -57,3 +59,5 @@ data Opcode =   Op0NNN OpcodeArgs   |
                 OpFX33 OpcodeArgs   |
                 OpFX55 OpcodeArgs   |
                 OpFX65 OpcodeArgs deriving Show
+
+type OpcodeCallback = Interpreter -> Opcode -> Expected Interpreter

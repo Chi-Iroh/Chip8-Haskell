@@ -62,9 +62,38 @@ executable Chip8
                     Expected,
                     Font,
                     Hex,
+                    Interpreter,
                     MapUtils,
                     Opcode,
+                    OpcodeExec,
                     OpcodeTypes,
+                    Opcodes.Op00E0,
+                    Opcodes.Op00EE,
+                    Opcodes.Op0NNN,
+                    Opcodes.Op1NNN,
+                    Opcodes.Op2NNN,
+                    Opcodes.Op3XNN,
+                    Opcodes.Op4XNN,
+                    Opcodes.Op5XY0,
+                    Opcodes.Op6XNN,
+                    Opcodes.Op7XNN,
+                    Opcodes.Op8XY1,
+                    Opcodes.Op8XY2,
+                    Opcodes.Op8XY3,
+                    Opcodes.Op8XY4,
+                    Opcodes.Op8XY5,
+                    Opcodes.Op8XY6,
+                    Opcodes.Op8XY7,
+                    Opcodes.Op8XYE,
+                    Opcodes.OpANNN,
+                    Opcodes.OpCXNN,
+                    Opcodes.OpDXYN,
+                    Opcodes.OpFX1E,
+                    Opcodes.OpFX29,
+                    Opcodes.OpFX33,
+                    Opcodes.OpFX55,
+                    Opcodes.OpFX65,
+                    Opcodes.WrongOpcode,
                     Screen,
                     SFVector,
                     Word
@@ -73,7 +102,7 @@ executable Chip8
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends: base, bytestring, SFML
+    build-depends: base, bytestring, random, SFML
 
     -- Directories containing source files.
     hs-source-dirs:   src
