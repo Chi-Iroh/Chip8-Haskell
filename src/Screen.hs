@@ -178,4 +178,4 @@ clearScreen screen = Screen {
 }
 
 updateScreen :: RenderWindow -> Screen -> Expected (Maybe SFEvent)
-updateScreen window screen = liftIO (sleep >> clearRenderWindow window black >> draw window screen Nothing >> display window >> waitEvent window)
+updateScreen window screen = liftIO (sleep >> clearRenderWindow window black >> draw window screen Nothing >> display window >> pollEvent window)
