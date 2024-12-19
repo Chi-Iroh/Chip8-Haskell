@@ -20,7 +20,7 @@ main' :: Expected Interpreter -> Expected ()
 main' interpreter = interpreter >>= loop >>= destroyInterpreter
 
 main :: IO ()
-main = fmap (main' . traceShowId) makeInterpreter >>= exit
+main = makeInterpreter >>= exit . main' . traceShowId
 
 handleEvent :: Interpreter -> Maybe SFEvent -> Expected Interpreter
 handleEvent interpreter Nothing = loop interpreter
