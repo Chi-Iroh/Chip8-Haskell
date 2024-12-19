@@ -1,4 +1,4 @@
-module CPU (Word8, CPU(..), loadROM, memorySize, memoryStart, isValidPc, checkPc, incrementPc) where
+module CPU (Word8, CPU(..), loadROM, memorySize, memoryStart, isValidPc, checkPc, incrementPc, decrementCounters) where
 
 import Expected (Expected(..))
 import Font (initFont)

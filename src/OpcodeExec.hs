@@ -1,6 +1,6 @@
 module OpcodeExec (execFrameOpcodes) where
 
-import CPU (incrementPc)
+import CPU (incrementPc, decrementCounters)
 import Debug.Trace (traceShowId)
 import Expected
 import Interpreter
@@ -34,6 +34,7 @@ import Opcodes.OpFX55 (execOpFX55)
 import Opcodes.OpFX65 (execOpFX65)
 
 import OpcodeTypes (OpcodeCallback, Opcode(..))
+import Sound (playSoundIfCounterOk)
 
 opcodeFunc :: Opcode -> Expected OpcodeCallback
 opcodeFunc (Op00E0) = Expected execOp00E0
@@ -68,7 +69,7 @@ incrementPc' :: Interpreter -> Expected Interpreter
 incrementPc' interpreter = incrementPc (cpu interpreter) >>= (\cpu' -> Expected interpreter { cpu = cpu' })
 
 execNextOpcode :: Interpreter -> Expected Interpreter
-execNextOpcode interpreter = readOpcode (cpu interpreter) >>= (\op -> opcodeFunc op >>= (\callback -> callback interpreter op)) >>= incrementPc'
+execNextOpcode interpreter = readOpcode (cpu interpreter) >>= (\op -> opcodeFunc op >>= (\callback -> callback interpreter op)) >>= incrementPc' <$> (\interpreter' -> interpreter' { cpu =  decrementCounters $ playSoundIfCounterOk (cpu interpreter') (beep interpreter') })
 
 execMultipleOpcodes :: Int -> Interpreter -> Expected Interpreter
 execMultipleOpcodes 0 interpreter = Expected interpreter

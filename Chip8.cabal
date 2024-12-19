@@ -48,6 +48,10 @@ extra-doc-files:    CHANGELOG.md
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
 
+-- Will generate import Paths_Chip8
+data-dir:   assets
+data-files: beep.wav
+
 executable Chip8
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
@@ -63,6 +67,7 @@ executable Chip8
                     Font,
                     Hex,
                     Interpreter,
+                    List,
                     MapUtils,
                     Opcode,
                     OpcodeExec,
@@ -94,7 +99,9 @@ executable Chip8
                     Opcodes.OpFX55,
                     Opcodes.OpFX65,
                     Opcodes.WrongOpcode,
+                    Paths_Chip8,
                     Screen,
+                    Sound,
                     SFVector,
                     Word
 

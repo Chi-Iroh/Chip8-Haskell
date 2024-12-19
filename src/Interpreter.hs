@@ -11,27 +11,29 @@ import CPU (CPU)
 import Destroy (SFMLResource(..), destroyAll)
 import Expected (Expected(..))
 import Screen (Screen, makeScreen, makeWindow)
+import Sound
 
 data Interpreter = Interpreter {
     cpu :: CPU,
     screen :: Screen,
     window :: RenderWindow,
-    seed :: StdGen
+    seed :: StdGen,
+    beep :: Sound
 }
 
 instance Show Interpreter where -- for debug purpose
     show :: Interpreter -> String
     show interpreter = "Interpreter { cpu = " ++ show (cpu interpreter) ++ " }"
 
-liftA4 :: Applicative f => (a -> b -> c -> d -> e) -> f a -> f b -> f c -> f d -> f e
-liftA4 f a b c d = liftA3 f a b c <*> d
+liftA5 :: Applicative f => (a -> b -> c -> d -> e -> g) -> f a -> f b -> f c -> f d -> f e -> f g
+liftA5 f a b c d e = liftA3 f a b c <*> d <*> e
 
-makeInterpreter :: Expected Interpreter
-makeInterpreter = liftA4 Interpreter cpu' screen' window' seed'
+makeInterpreter :: IO (Expected Interpreter)
+makeInterpreter = fmap (liftA5 Interpreter cpu' screen' window' seed') makeSound
     where cpu' = readROM
           screen' = makeScreen
           window' = makeWindow
           seed' = getStdGen :: Expected StdGen
 
 destroyInterpreter :: Interpreter -> Expected ()
-destroyInterpreter interpreter = destroyAll [SFMLResource (window interpreter), SFMLResource (screen interpreter)]
+destroyInterpreter interpreter = destroyAll [SFMLResource (window interpreter), SFMLResource (screen interpreter), SFMLResource (beep interpreter)]
