@@ -1,7 +1,6 @@
 module Opcodes.OpCXNN (execOpCXNN) where
 
 import Data.Bits ((.&.))
-import Debug.Trace (traceShowId)
 import System.Random (randomR)
 
 import CPU (checkPc, CPU(..))

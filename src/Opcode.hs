@@ -55,6 +55,7 @@ maskedOpcodes = [   (0xF000, 0x0000, Op0NNN)
                 ,   (0xF0FF, 0xE09E, OpEX9E)
                 ,   (0xF0FF, 0xE0A1, OpEXA1)
                 ,   (0xF0FF, 0xF007, OpFX07)
+                ,   (0xF0FF, 0xF00A, OpFX0A)
                 ,   (0xF0FF, 0xF015, OpFX15)
                 ,   (0xF0FF, 0xF018, OpFX18)
                 ,   (0xF0FF, 0xF01E, OpFX1E)
@@ -84,4 +85,5 @@ identifyOpcode op
           maskedOp = find (\(mask, res, _) -> mask .&. op == res) maskedOpcodes
 
 readOpcode :: CPU -> Expected Opcode
+-- readOpcode cpu = rawOpcode cpu >>= (\op -> identifyOpcode op)
 readOpcode cpu = rawOpcode cpu >>= (\op -> identifyOpcode (debug2 "raw opcode: " (showHex16 op) op))

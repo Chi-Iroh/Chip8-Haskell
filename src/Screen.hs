@@ -172,9 +172,8 @@ swapAllPixels screen = Screen {
 }
 
 clearScreen :: Screen -> Screen
-clearScreen screen = Screen {
-    px = emptyPixels,
-    rects = rects screen
+clearScreen screen = screen {
+    px = emptyPixels
 }
 
 updateScreen :: RenderWindow -> Screen -> Expected (Maybe SFEvent)

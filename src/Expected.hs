@@ -1,5 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
-module Expected (Expected(..), liftIO, fromEither, isExpected, isUnexpected, expected, unexpected) where
+module Expected (Expected(..), liftIO, fromEither, isExpected, isUnexpected, expected, unexpected, fromMaybe) where
 
 import Control.Exception (Exception)
 import Control.Monad.IO.Class (MonadIO, liftIO)
@@ -57,6 +57,10 @@ isUnexpected _ = False
 fromEither :: Exception e => Either e a -> Expected a
 fromEither (Left error) = Unexpected (show error)
 fromEither (Right a) = Expected a
+
+fromMaybe :: String -> Maybe a -> Expected a
+fromMaybe _ (Just a) = Expected a
+fromMaybe errorMessage Nothing = Unexpected errorMessage
 
 unexpected :: Expected a -> String
 unexpected (Unexpected err) = err
