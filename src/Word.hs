@@ -31,4 +31,4 @@ addOverflow8 :: Word8 -> Word8 -> (Word8, Bool)
 addOverflow8 a b = (a + b, b > (0xFF - a))
 
 subUnderflow8 :: Word8 -> Word8 -> (Word8, Bool)
-subUnderflow8 a b = (a - b, a < b)
+subUnderflow8 a b = (a - b, b > a)
