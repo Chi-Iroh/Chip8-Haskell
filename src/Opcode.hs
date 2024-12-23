@@ -80,7 +80,7 @@ identifyOpcode :: Word16 -> Expected Opcode
 identifyOpcode op
     | isJust exactOp = Expected (snd $ fromJust exactOp)
     | isJust maskedOp = Expected ((thd $ fromJust maskedOp) (makeOpcodeArgs op))
-    | otherwise = Unexpected "Cannot identify opcode "
+    | otherwise = Unexpected ("Cannot identify opcode " ++ showHex16 op)
     where exactOp = find ((== op) . fst) exactOpcodes
           maskedOp = find (\(mask, res, _) -> mask .&. op == res) maskedOpcodes
 

@@ -1,5 +1,6 @@
 module Opcodes.Op00EE (execOp00EE) where
 
+import Data.List (uncons)
 import Data.Maybe (fromJust)
 
 import CPU
@@ -14,6 +15,5 @@ execOp00EE interpreter Op00EE
     | otherwise = checkPc (lastPc) >>= (\pc' -> Expected interpreter { cpu = cpu' { pc = pc', jumps = remainingJumps } })
     where cpu' = cpu interpreter
           jumps' = jumps cpu'
-          lastPc = head jumps'
-          remainingJumps = tail remainingJumps
+          (lastPc, remainingJumps) = fromJust (uncons jumps')
 execOp00EE _ op = wrongOpcode "00EE" op
