@@ -87,7 +87,7 @@ incrementPc' :: Interpreter -> Expected Interpreter
 incrementPc' interpreter = incrementPc (cpu interpreter) >>= (\cpu' -> Expected interpreter { cpu = cpu' })
 
 execNextOpcode :: Interpreter -> Expected Interpreter
-execNextOpcode interpreter = readOpcode (cpu interpreter) >>= (\op -> opcodeFunc op >>= (\callback -> callback interpreter op)) >>= incrementPc' <$> (\interpreter' -> interpreter' { cpu =  decrementCounters $ playSoundIfCounterOk (cpu interpreter') (beep interpreter') })
+execNextOpcode interpreter = readOpcode (cpu interpreter) >>= (\op -> opcodeFunc op >>= (\callback -> callback interpreter op)) >>= incrementPc'
 
 execMultipleOpcodes :: Int -> Interpreter -> Expected Interpreter
 execMultipleOpcodes 0 interpreter = Expected interpreter
@@ -98,4 +98,4 @@ opcodesPerFrame :: Int
 opcodesPerFrame = 4
 
 execFrameOpcodes :: Interpreter -> Expected Interpreter
-execFrameOpcodes = execMultipleOpcodes opcodesPerFrame
+execFrameOpcodes = execMultipleOpcodes opcodesPerFrame <$> (\interpreter' -> interpreter' { cpu =  decrementCounters $ playSoundIfCounterOk (cpu interpreter') (beep interpreter') })
