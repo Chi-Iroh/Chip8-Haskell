@@ -12,7 +12,7 @@ import OpcodeTypes (Opcode(OpFX0A), OpcodeArgs(..), OpcodeCallback)
 import Word (int)
 
 execOpFX0A :: OpcodeCallback
-execOpFX0A interpreter (OpFX0A args) = traceShow "hello" $ Expected interpreter { cpu = decrementCounters cpu' { v = vWithKey } }
+execOpFX0A interpreter (OpFX0A args) = traceShow "hello" $ Expected interpreter { cpu = cpu' { v = vWithKey } }
     where cpu' = cpu interpreter
           v' = v cpu'
           window' = window interpreter
