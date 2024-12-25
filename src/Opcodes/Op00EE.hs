@@ -12,7 +12,7 @@ import OpcodeTypes (Opcode(Op00EE), OpcodeArgs(..), OpcodeCallback)
 execOp00EE :: OpcodeCallback
 execOp00EE interpreter Op00EE
     | null jumps' = Unexpected "Cannot return from a subroutine because we weren't inside one !"
-    | otherwise = checkPc (lastPc) >>= (\pc' -> Expected interpreter { cpu = cpu' { pc = pc', jumps = remainingJumps } })
+    | otherwise = checkPc lastPc >>= (\pc' -> Expected interpreter { cpu = cpu' { pc = pc', jumps = remainingJumps } })
     where cpu' = cpu interpreter
           jumps' = jumps cpu'
           (lastPc, remainingJumps) = fromJust (uncons jumps')
