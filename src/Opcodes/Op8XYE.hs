@@ -16,7 +16,7 @@ execOp8XYE interpreter (Op8XYE args) = Expected interpreter { cpu = cpu' { v = m
     where cpu' = cpu interpreter
           v' = v cpu'
           vx = v' !! (int $ x args)
-          msb = (vx .&. 0x80) .>>. 7
+          msb = vx .>>. 7
           shifted = mapAt (.<<. 1) (int $ x args) v'
           msbSave = setAt 0xF msb shifted
 execOp8XYE _ op = wrongOpcode "8XYE" op
