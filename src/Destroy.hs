@@ -2,12 +2,11 @@
 module Destroy (SFMLResource(..), SFResource(..), destroyAll) where
 
 import SFML.SFResource (SFResource(..), destroy)
-import Expected (Expected(..), liftIO)
 
 data SFMLResource = forall a. SFResource a => SFMLResource a
 
-destroy' :: SFMLResource -> Expected ()
-destroy' (SFMLResource a) = liftIO (destroy a)
+destroy' :: SFMLResource -> IO ()
+destroy' (SFMLResource a) = destroy a
 
-destroyAll :: [SFMLResource] -> Expected ()
+destroyAll :: [SFMLResource] -> IO ()
 destroyAll = mapM_ destroy'

@@ -1,8 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
-module Expected (Expected(..), liftIO, fromEither, isExpected, isUnexpected, expected, unexpected, fromMaybe) where
+module Expected (Expected(..), fromEither, isExpected, isUnexpected, expected, unexpected, fromMaybe) where
 
 import Control.Exception (Exception)
-import Control.Monad.IO.Class (MonadIO, liftIO)
 import System.IO.Unsafe (unsafePerformIO)
 
 data Expected a = Expected a | Unexpected String deriving Eq
@@ -40,11 +39,6 @@ instance Show a => Show (Expected a) where
     show :: Show a => Expected a -> String
     show (Unexpected err) = err
     show (Expected a) = show a
-
-instance MonadIO Expected where
-    liftIO :: IO a -> Expected a
-    liftIO io = Expected $! unsafePerformIO io  -- $! forces a strict evaluation instead of lazy, without it the IO may not be executed so we force it
-                                                -- see https://stackoverflow.com/a/48978033/14972078
 
 isExpected :: Expected a -> Bool
 isExpected (Expected _) = True

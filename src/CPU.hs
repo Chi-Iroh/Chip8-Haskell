@@ -1,8 +1,13 @@
+{-# LANGUAGE InstanceSigs #-}
+
 module CPU (Word8, CPU(..), loadROM, memorySize, memoryStart, isValidPc, checkPc, incrementPc, decrementCounters) where
+
+import Debug.Trace (traceShow)
+import Text.Printf (printf)
 
 import Expected (Expected(..))
 import Font (initFont)
-import Hex (showHex16)
+import Hex (showHex16, showHex8)
 import Word (u8, u16, int, Word8, Word16)
 
 memorySize :: Word16
@@ -25,10 +30,15 @@ data CPU = CPU {
     jumps :: [Word16],
     soundCounter :: Word8,
     sysCounter :: Word8
-} deriving Show
+}
+
+instance Show CPU where
+    show :: CPU -> String
+    show cpu = printf "{\n\tpc = %s\n\tv = %s\n\ti = %s\n\t%d jump(s)\n\tsound counter = %s\n\tsys counter = %s\n}" (showHex16 (pc cpu)) v' (showHex16 (i cpu)) (length (jumps cpu)) (showHex8 (soundCounter cpu)) (showHex8 (sysCounter cpu))
+        where v' = show (map showHex8 (v cpu))
 
 decrementCounter :: Word8 -> Word8
-decrementCounter n = if n == 0 then 0 else n - 1
+decrementCounter = const 0
 
 decrementCounters :: CPU -> CPU
 decrementCounters cpu = cpu {

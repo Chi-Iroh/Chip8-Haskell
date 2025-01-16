@@ -12,7 +12,7 @@ import List (setAt, slice)
 import MapUtils (imap)
 import OpcodeTypes
 import Opcodes.WrongOpcode (wrongOpcode)
-import Screen (putPixels, Position)
+import Screen (putPixels, Position, zip2, px)
 import Word (int)
 
 generateSpriteRowUpdates :: Position -> [Bool] -> [(Position, Bool)]
@@ -21,6 +21,10 @@ generateSpriteRowUpdates (x, y) spriteRow = imap (\i pos -> (pos, spriteRow !! i
 
 generateSpriteUpdates :: Position -> Int -> [[Bool]] -> [(Position, Bool)]
 generateSpriteUpdates (x, y) height sprite = concat $ imap (\i spriteRow -> generateSpriteRowUpdates (x, y + i) spriteRow) sprite
+
+hasAnyPixelBeingUnset :: Screen -> Screen -> Bool
+hasAnyPixelBeingUnset screen updatedScreen = elem (True, False) screenDiff
+    where screenDiff = concat (zip2 (px screen) (px updatedScreen))
 
 execOpDXYN :: OpcodeCallback
 execOpDXYN interpreter (OpDXYN args) = Expected (interpreter { screen = updatedScreen, cpu = cpu' { v = v'' } })
@@ -32,6 +36,5 @@ execOpDXYN interpreter (OpDXYN args) = Expected (interpreter { screen = updatedS
           y' = int (v' !! (int $ y args))
           spriteChanges = generateSpriteUpdates (x', y') (int $ n args) sprite
           updatedScreen = putPixels spriteChanges screen'
-          isScreenChanged = updatedScreen /= screen'
-          v'' = setAt 0xF (fromBool isScreenChanged) v'
+          v'' = setAt 0xF (fromBool $ hasAnyPixelBeingUnset screen' updatedScreen) v'
 execOpDXYN _ op = wrongOpcode "DXYN" op

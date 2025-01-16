@@ -18,11 +18,14 @@ module Screen (
     generatePixels,
     clearScreen,
     sleep,
-    updateScreen
+    updateScreen,
+    zip2,
+    px
     ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (isLeft)
+import Data.Functor ((<&>))
 import Data.Int (Int64)
 import Data.List (find)
 import Data.Maybe (maybe)
@@ -103,19 +106,22 @@ sleepTime = microseconds (div 1000000 (int64 fps))
 sleep :: IO ()
 sleep = sfSleep sleepTime
 
-makeWindow :: Expected RenderWindow
-makeWindow = liftIO (window >>= (\window' -> setFramerateLimit window' fps >> return window'))
+makeWindow :: IO (Expected RenderWindow)
+makeWindow = window >>= (\window' -> setFramerateLimit window' fps >> return (Expected window'))
     where (width, height) = screenSize
           window = createRenderWindow (VideoMode (width * pixelSide) (height * pixelSide) 32) "Chip8" [SFDefaultStyle] Nothing
 
 fromSFException :: SFException -> String
 fromSFException (SFException err) = err
 
-makePixel :: Position -> Color -> Expected RectangleShape
-makePixel pos color = liftIO createRectangleShape >>= (\rect -> if isLeft rect then Unexpected (fromSFException $ fromLeft' rect) else setupRect (fromRight' rect) pos pixelSize color)
+makePixel :: Position -> Color -> IO (Expected RectangleShape)
+makePixel pos color = createRectangleShape >>= getRect
+    where getRect rect = case rect of
+            Left err -> pure (Unexpected (fromSFException err))
+            Right rect' -> setupRect rect' pos pixelSize color
 
-setupRect :: RectangleShape -> Position -> Size -> Color -> Expected RectangleShape
-setupRect rect pos size color = liftIO (setPosition rect pos' >> setSize rect size' >> setFillColor rect color) >> Expected rect
+setupRect :: RectangleShape -> Position -> Size -> Color -> IO (Expected RectangleShape)
+setupRect rect pos size color = setPosition rect pos' >> setSize rect size' >> setFillColor rect color >> pure (Expected rect)
     where pos' = itoVec2f pos
           size' = itoVec2f size
 
@@ -128,11 +134,14 @@ makeScreen' px rects = Screen {
 emptyPixels :: [[Bool]]
 emptyPixels = replicate (height_ screenSize) (replicate (width_ screenSize) False)
 
-makeScreen :: Expected Screen
-makeScreen = fmap (makeScreen' pixels) rects
+sequence2 :: Monad m => [[m a]] -> m [[a]]
+sequence2 = sequence . (map sequence)
+
+makeScreen :: IO (Expected Screen)
+makeScreen = rects <&> (fmap (makeScreen' pixels))
     where
         pixels = emptyPixels
-        rects = imapM2 (\x y color -> makePixel (pixelPos (x, y)) black) pixels
+        rects = imapM2 (\x y color -> makePixel (pixelPos (x, y)) black) pixels <&> sequence2
 
 findWithDefault :: (a -> Bool) -> b -> (a -> b) -> [a] -> b
 findWithDefault f default' convert arr = maybe default' convert (find f arr)
@@ -176,5 +185,5 @@ clearScreen screen = screen {
     px = emptyPixels
 }
 
-updateScreen :: RenderWindow -> Screen -> Expected (Maybe SFEvent)
-updateScreen window screen = liftIO (sleep >> clearRenderWindow window black >> draw window screen Nothing >> display window >> pollEvent window)
+updateScreen :: RenderWindow -> Screen -> IO (Maybe SFEvent)
+updateScreen window screen = sleep >> clearRenderWindow window green >> draw window screen Nothing >> display window >> pollEvent window

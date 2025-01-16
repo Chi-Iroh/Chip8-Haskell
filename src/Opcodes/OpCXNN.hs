@@ -1,7 +1,8 @@
 module Opcodes.OpCXNN (execOpCXNN) where
 
 import Data.Bits ((.&.))
-import System.Random (randomR)
+import Data.Word (Word8)
+import System.Random (randomR, StdGen)
 
 import CPU (checkPc, CPU(..))
 import Expected (Expected(..))
@@ -13,9 +14,9 @@ import Word (int)
 
 execOpCXNN :: OpcodeCallback
 execOpCXNN interpreter (OpCXNN args) = Expected interpreter {
-        cpu = cpu' { v = setAt (int $ x args) ((nn args) .&. rnd) (v cpu') },
+        cpu = cpu' { v = setAt (int $ x args) ((nn args) .&. 0x25) (v cpu') },
         seed = seed'
     }
     where cpu' = cpu interpreter
-          (rnd, seed') = randomR (0x00, 0xFF) (seed interpreter)
+          (rnd, seed') = randomR (0x00, 0xFF) (seed interpreter) :: (Word8, StdGen)
 execOpCXNN _ op = wrongOpcode "CXNN" op
