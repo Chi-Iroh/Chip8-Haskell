@@ -12,11 +12,8 @@ import Interpreter
 import OpcodeExec (execFrameOpcodes)
 import Screen (Screen, Size, updateScreen)
 
-main' :: IO (Expected Interpreter) -> IO ()
-main' interpreter = interpreter >>= loop >>= destroyInterpreter
-
 main :: IO ()
-main = main' makeInterpreter
+main = makeInterpreter >>= loop >>= destroyInterpreter
 
 handleEvent :: Expected Interpreter -> Maybe SFEvent -> IO (Expected Interpreter)
 handleEvent err@(Unexpected _) _ = pure err
