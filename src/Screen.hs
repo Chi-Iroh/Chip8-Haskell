@@ -186,4 +186,4 @@ clearScreen screen = screen {
 }
 
 updateScreen :: RenderWindow -> Screen -> IO (Maybe SFEvent)
-updateScreen window screen = sleep >> clearRenderWindow window green >> draw window screen Nothing >> display window >> pollEvent window
+updateScreen window screen = sleep >> clearRenderWindow window black >> draw window screen Nothing >> display window >> pollEvent window
