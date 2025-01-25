@@ -1,5 +1,6 @@
 module Opcodes.OpDXYN (execOpDXYN) where
 
+import Data.Maybe (mapMaybe)
 import Data.Word (Word8)
 
 import CPU (CPU(..))
@@ -12,14 +13,15 @@ import List (setAt, slice)
 import MapUtils (imap)
 import OpcodeTypes
 import Opcodes.WrongOpcode (wrongOpcode)
-import Screen (putPixels, Position, zip2, px)
+import Screen (Position, zip2, px, swapPixels)
 import Word (int)
 
-generateSpriteRowUpdates :: Position -> [Bool] -> [(Position, Bool)]
-generateSpriteRowUpdates (x, y) spriteRow = imap (\i pos -> (pos, spriteRow !! i)) coords
+generateSpriteRowUpdates :: Position -> [Bool] -> [Position]
+generateSpriteRowUpdates (x, y) spriteRow = mapMaybe (\(spriteBit, pos) -> if spriteBit then Just pos else Nothing) coordsAndSpriteBits
     where coords = zip [x..(x + 7)] (repeat y)
+          coordsAndSpriteBits = zip spriteRow coords
 
-generateSpriteUpdates :: Position -> Int -> [[Bool]] -> [(Position, Bool)]
+generateSpriteUpdates :: Position -> Int -> [[Bool]] -> [Position]
 generateSpriteUpdates (x, y) height sprite = concat $ imap (\i spriteRow -> generateSpriteRowUpdates (x, y + i) spriteRow) sprite
 
 hasAnyPixelBeingUnset :: Screen -> Screen -> Bool
@@ -34,7 +36,7 @@ execOpDXYN interpreter (OpDXYN args) = Expected (interpreter { screen = updatedS
           v' = v cpu'
           x' = int (v' !! (int $ x args))
           y' = int (v' !! (int $ y args))
-          spriteChanges = generateSpriteUpdates (x', y') (int $ n args) sprite
-          updatedScreen = putPixels spriteChanges screen'
+          spriteSwaps = generateSpriteUpdates (x', y') (int $ n args) sprite
+          updatedScreen = swapPixels spriteSwaps screen'
           v'' = setAt 0xF (fromBool $ hasAnyPixelBeingUnset screen' updatedScreen) v'
 execOpDXYN _ op = wrongOpcode "DXYN" op

@@ -85,5 +85,4 @@ identifyOpcode op
           maskedOp = find (\(mask, res, _) -> mask .&. op == res) maskedOpcodes
 
 readOpcode :: CPU -> Expected Opcode
--- readOpcode cpu = rawOpcode cpu >>= (\op -> identifyOpcode op)
-readOpcode cpu = rawOpcode cpu >>= (\op -> identifyOpcode (debug2 "raw opcode: " (showHex16 op) op))
+readOpcode cpu = rawOpcode cpu >>= (\op -> identifyOpcode op)

@@ -20,7 +20,9 @@ module Screen (
     sleep,
     updateScreen,
     zip2,
-    px
+    px,
+    makeScreen',
+    emptyPixels
     ) where
 
 import Control.Monad.IO.Class (liftIO)
@@ -54,6 +56,10 @@ instance Eq Screen where
 
     (/=) :: Screen -> Screen -> Bool
     (/=) a b = (px a) /= (px b)
+
+instance Show Screen where
+    show :: Screen -> String
+    show = show . concat . px
 
 instance SFResource Screen where
     destroy :: Screen -> IO ()

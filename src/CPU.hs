@@ -32,11 +32,6 @@ data CPU = CPU {
     sysCounter :: Word8
 }
 
-instance Show CPU where
-    show :: CPU -> String
-    show cpu = printf "{\n\tpc = %s\n\tv = %s\n\ti = %s\n\t%d jump(s)\n\tsound counter = %s\n\tsys counter = %s\n}" (showHex16 (pc cpu)) v' (showHex16 (i cpu)) (length (jumps cpu)) (showHex8 (soundCounter cpu)) (showHex8 (sysCounter cpu))
-        where v' = show (map showHex8 (v cpu))
-
 decrementCounter :: Word8 -> Word8
 decrementCounter = const 0
 

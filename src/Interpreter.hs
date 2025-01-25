@@ -23,10 +23,6 @@ data Interpreter = Interpreter {
     beep :: Sound
 }
 
-instance Show Interpreter where -- for debug purpose
-    show :: Interpreter -> String
-    show interpreter = "Interpreter { cpu = " ++ show (cpu interpreter) ++ " }"
-
 liftA5 :: Applicative f => (a -> b -> c -> d -> e -> g) -> f a -> f b -> f c -> f d -> f e -> f g
 liftA5 f a b c d e = liftA3 f a b c <*> d <*> e
 
