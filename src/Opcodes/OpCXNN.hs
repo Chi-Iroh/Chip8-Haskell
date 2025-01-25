@@ -14,7 +14,7 @@ import Word (int)
 
 execOpCXNN :: OpcodeCallback
 execOpCXNN interpreter (OpCXNN args) = Expected interpreter {
-        cpu = cpu' { v = setAt (int $ x args) ((nn args) .&. 0x25) (v cpu') },
+        cpu = cpu' { v = setAt (int $ x args) ((nn args) .&. rnd) (v cpu') },
         seed = seed'
     }
     where cpu' = cpu interpreter
