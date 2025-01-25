@@ -80,7 +80,6 @@ opcodeFunc (OpFX29 _) = Expected execOpFX29
 opcodeFunc (OpFX33 _) = Expected execOpFX33
 opcodeFunc (OpFX55 _) = Expected execOpFX55
 opcodeFunc (OpFX65 _) = Expected execOpFX65
-opcodeFunc op = Unexpected ("Opcode " ++ show op ++ " not implemented yet !")
 
 incrementPc' :: Interpreter -> Expected Interpreter
 incrementPc' interpreter = incrementPc (cpu interpreter) >>= (\cpu' -> Expected interpreter { cpu = cpu' })
