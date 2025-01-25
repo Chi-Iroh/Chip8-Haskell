@@ -8,7 +8,7 @@ import OpcodeTypes (Opcode(OpBNNN), OpcodeArgs(..), OpcodeCallback)
 import Word (u8to16)
 
 execOpBNNN :: OpcodeCallback
-execOpBNNN interpreter (OpBNNN args) = Expected interpreter { cpu = cpu' { pc = (nnn args) + u8to16 (head v') - 2 } }
+execOpBNNN interpreter (OpBNNN args) = Expected interpreter { cpu = cpu' { pc = (nnn args) + u8to16 (v' !! 0) - 2 } }
     where cpu' = cpu interpreter
           v' = v cpu'
 execOpBNNN _ op = wrongOpcode "BNNN" op
