@@ -1,7 +1,6 @@
 module OpcodeExec (execFrameOpcodes) where
 
 import CPU (incrementPc, decrementCounters)
-import Debug.Trace (traceShowId)
 import Expected
 import Interpreter
 import Opcode (readOpcode)

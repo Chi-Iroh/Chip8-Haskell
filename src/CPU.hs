@@ -2,7 +2,6 @@
 
 module CPU (Word8, CPU(..), loadROM, memorySize, memoryStart, isValidPc, checkPc, incrementPc, decrementCounters) where
 
-import Debug.Trace (traceShow)
 import Text.Printf (printf)
 
 import Expected (Expected(..))
